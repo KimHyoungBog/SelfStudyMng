@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "PowerShell(winget install *)",
-      "PowerShell(git *)"
+      "PowerShell(git *)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); cd \"D:\\\\Project\\\\TestProject\"; git remote -v)",
+      "PowerShell(git remote *)",
+      "PowerShell(git push *)",
+      "Bash(git push *)",
+      "PowerShell(winget upgrade *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git config *)",
+      "Bash(echo \"exit:$?\")"
     ]
   }
 }
