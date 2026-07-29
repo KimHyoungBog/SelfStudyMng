@@ -1,5 +1,6 @@
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Subject, DailyRecord, DayOfWeek } from '../types';
+import { toLocalDateString } from '../utils/date';
 
 function getWeekDates(today: Date): string[] {
   const day = today.getDay(); // 0=일
@@ -8,7 +9,7 @@ function getWeekDates(today: Date): string[] {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    return d.toISOString().slice(0, 10);
+    return toLocalDateString(d);
   });
 }
 

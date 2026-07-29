@@ -1,17 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Subject, DailyRecord, DayOfWeek, DAY_NAMES } from '../types';
-
-function toDateString(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
+import { toLocalDateString } from '../utils/date';
 
 export default function Today() {
   const [subjects] = useLocalStorage<Subject[]>('study-app:subjects', []);
   const [records, setRecords] = useLocalStorage<DailyRecord[]>('study-app:records', []);
 
   const today = new Date();
-  const todayStr = toDateString(today);
+  const todayStr = toLocalDateString(today);
   const todayDay = today.getDay() as DayOfWeek;
 
   const todaySubjects = subjects.filter((s) => (s.targetMinutes[todayDay] ?? 0) > 0);
@@ -90,7 +87,9 @@ export default function Today() {
                 value={actualMinutes}
                 aria-label={`${s.name} 실제 시간`}
                 onChange={(e) =>
-                  upsertRecord(s.id, { actualMinutes: Math.max(0, Number(e.target.value)) })
+                  upsertRecord(s.id, {
+                    actualMinutes: Math.min(720, Math.max(0, Number(e.target.value))),
+                  })
                 }
               />
               <span>분</span>

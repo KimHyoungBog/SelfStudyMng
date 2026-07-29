@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { Subject, DayOfWeek, DAY_NAMES } from '../types';
+import { Subject, DailyRecord, DayOfWeek, DAY_NAMES } from '../types';
 
 const DAYS: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
 
@@ -53,7 +53,7 @@ function SubjectForm({ initial, onSave, onCancel }: SubjectFormProps) {
                 value={targets[day] ?? 0}
                 aria-label={`${DAY_NAMES[day]}요일 목표 시간`}
                 onChange={(e) => {
-                  const v = Math.max(0, Number(e.target.value));
+                  const v = Math.min(480, Math.max(0, Number(e.target.value)));
                   setTargets((prev) => ({ ...prev, [day]: v }));
                 }}
               />
@@ -75,6 +75,7 @@ function SubjectForm({ initial, onSave, onCancel }: SubjectFormProps) {
 
 export default function Settings() {
   const [subjects, setSubjects] = useLocalStorage<Subject[]>('study-app:subjects', []);
+  const [, setRecords] = useLocalStorage<DailyRecord[]>('study-app:records', []);
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -91,6 +92,7 @@ export default function Settings() {
 
   const deleteSubject = (id: string) => {
     setSubjects((prev) => prev.filter((s) => s.id !== id));
+    setRecords((prev) => prev.filter((r) => r.subjectId !== id));
   };
 
   const scheduleSummary = (s: Subject) => {
