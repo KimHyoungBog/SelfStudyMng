@@ -61,3 +61,52 @@ test('TC4: 과목 미등록 시 오늘 화면에 안내 메시지와 설정 링�
   await expect(page.getByText('과목을 먼저 등록하세요')).toBeVisible();
   await expect(page.getByRole('link', { name: '과목 설정으로 이동' })).toBeVisible();
 });
+
+// TC5: 주간 요약 — 이전 주로 이동해 과거 기록을 조회할 수 있다
+test('TC5: 주간 요약에서 이전 주로 이동하면 지난 주 기록이 표시된다', async ({ page }) => {
+  await page.goto('/');
+
+  // 지난 주 월요일 날짜를 앱과 동일한 로직(로컬 타임존 기준)으로 계산
+  const lastWeekMonday = await page.evaluate(() => {
+    const today = new Date();
+    const day = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((day === 0 ? 7 : day) - 1) - 7);
+    const y = monday.getFullYear();
+    const m = String(monday.getMonth() + 1).padStart(2, '0');
+    const d = String(monday.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  });
+
+  await page.evaluate((mondayDate) => {
+    localStorage.setItem(
+      'study-app:subjects',
+      JSON.stringify([
+        { id: 's1', name: '국어', targetMinutes: { 1: 30, 2: 30, 3: 30, 4: 30, 5: 30 } },
+      ]),
+    );
+    localStorage.setItem(
+      'study-app:records',
+      JSON.stringify([
+        { date: mondayDate, subjectId: 's1', completed: true, actualMinutes: 25 },
+      ]),
+    );
+  }, lastWeekMonday);
+
+  await page.goto('/weekly');
+
+  // 이번 주에는 지난 주 기록이 반영되지 않아야 함
+  const thisWeekRow = page.locator('tr', { has: page.getByText('국어') });
+  await expect(thisWeekRow.getByText('0분').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: '다음 주로 이동' })).toBeDisabled();
+
+  // 이전 주로 이동하면 25분 기록이 보여야 함
+  await page.getByRole('button', { name: '이전 주로 이동' }).click();
+  const lastWeekRow = page.locator('tr', { has: page.getByText('국어') });
+  await expect(lastWeekRow.getByText('25분')).toBeVisible();
+  await expect(page.getByRole('button', { name: '다음 주로 이동' })).toBeEnabled();
+
+  // 이번 주로 복귀
+  await page.getByRole('button', { name: '이번 주로 돌아가기' }).click();
+  await expect(thisWeekRow.getByText('0분').first()).toBeVisible();
+});
