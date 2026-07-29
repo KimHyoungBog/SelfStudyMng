@@ -11,3 +11,4 @@ playwright/.cache
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+.claude/settings.local.json
